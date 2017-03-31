@@ -19,6 +19,13 @@
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
+int min_diff = 20;
+
+int avg1 = 0;
+int avg2 = 0;
+
+int calibrate_step = 0;
+bool calibrating = true;
 
 bool sw1_on = false;
 bool sw2_on = false;
@@ -26,7 +33,7 @@ bool sw2_on = false;
 bool sw1_prev = false;
 bool sw2_prev = false;
 
-bool check_switch(int num);
+void delay(uint8_t time);
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -38,44 +45,47 @@ void main(void)
 
     /* Initialize I/O and Peripherals for application */
     InitApp();
+    
+    //RA1 = 0; // This is our VRef for C2.
+    
+    delay(50); // wait a little
+    
+    T0IF = 0; // Start timers
+    TMR1ON = 1;
 
-    for(int i=0;i<9;i++) {
-        LED1 = !LED1;
-        __delay_ms(100);
-    }
     //TODO: calibrate!
-    
-    LED1 = 1;
-    LED2 = 0;
-#ifdef S1_ENABLE
-    RELAY1 = 0;
-#endif
-#ifdef S2_ENABLE
-    RELAY2 = 0;
-#endif
-    
     while(1)
     {
-        bool sw1 = check_switch(1);
-        if(sw1_prev!=sw1) {
-            sw1_on=!sw1_on;
-            LED1 = sw1_on;
-            RELAY1 = sw1_on;
-            
-            sw1_prev = sw1;
-        }        
+        if(calibrating) {
+            if(LED1==0) {
+                LED1 = 1;
+            } else {
+                LED1 = 0;
+            }
+            delay(50);
+        } else {
+            if(sw1_on!=sw1_prev) {
+                LED1 = sw1_on;
+                RELAY1 = sw1_on;
+                
+                sw1_prev = sw1_on;
+            }
+            delay(50);
+        }
     }
 }
 
-bool check_switch(int num) {
-    TMR0 = 0;
-    __delay_ms(20); //TODO: configurable!
-    uint8_t raw = TMR0;
-    
-    if(raw<50) 
-    { //TODO: calibrate!
-        return true;
-    }
-    
-    return false;
+void delay (uint8_t time) {
+  uint8_t temp1, temp2;
+  
+  temp1 = time;
+  while(temp1--) {
+     temp2 = 249;
+     while(temp2--) {
+        NOP();
+        NOP();
+        NOP();
+        NOP();
+     }
+   }
 }

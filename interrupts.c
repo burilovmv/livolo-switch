@@ -11,6 +11,15 @@
 #include <stdint.h>         /* For uint8_t definition */
 #include <stdbool.h>        /* For true/false definition */
 
+extern int avg1;
+extern int avg2;
+
+extern bool sw1_on;
+extern bool sw2_on;
+
+extern int calibrate_step;
+extern bool calibrating;
+
 /******************************************************************************/
 /* Interrupt Routines                                                         */
 /******************************************************************************/
@@ -20,33 +29,48 @@
  * _PIC12 */
 #ifndef _PIC12
 
+int diff = 0;
+extern int min_diff;
+
 void interrupt isr(void)
 {
-    /* This code stub shows general interrupt handling.  Note that these
-    conditional statements are not handled within 3 seperate if blocks.
-    Do not use a seperate if block for each interrupt flag to avoid run
-    time errors. */
-
-#if 0
+    if(T0IF) { // Timer0 overflow
+        TMR1ON = 0; // Stop Timer1
+        
+        int freq = TMR1H<<8 & TMR1L;
+        
+        if(calibrating) {
+            if(calibrate_step==0) {
+                avg1 = freq;
+            } else {
+                avg1 = (avg1 + freq)/2;
+            }            
+            calibrate_step++;
+            if(calibrate_step>10) {
+                calibrating = false;
+            }
+        } else {
+            diff = avg1 - freq;
+            
+            if(diff>min_diff) {
+                if(sw1_on==0) {
+                    sw1_on = 1;
+                } else {
+                    sw1_on = 0;
+                }
+            }
+        }
+        
+        TMR1L = 0; //Reset Timer1
+        TMR1H = 0; 
+        
+        TMR1ON = 1; // Restart Timer1
+        T0IF = 0;   // Reset Timer0
+    }
     
-    /* TODO Add interrupt routine code here. */
-
-    /* Determine which flag generated the interrupt */
-    if(<Interrupt Flag 1>)
-    {
-        <Interrupt Flag 1=0>; /* Clear Interrupt Flag 1 */
+    if(T1IF) { //overflow?
+        T1IF = 0; 
     }
-    else if (<Interrupt Flag 2>)
-    {
-        <Interrupt Flag 2=0>; /* Clear Interrupt Flag 2 */
-    }
-    else
-    {
-        /* Unhandled interrupts */
-    }
-
-#endif
-
 }
 #endif
 

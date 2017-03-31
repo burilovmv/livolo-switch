@@ -18,7 +18,8 @@ oscillator configurations. */
 void ConfigureOscillator(void)
 {
     /* TODO Add clock switching code if appropriate.  */
-    OSCCON = 0x61; // Oscillator at 4MHz
+    OSCCON = 0b01100000; // Oscillator at 4MHz, use internal for operation and external for system clock
+    OSCTUNE = 0;
     
     /* Typical actions in this function are to tweak the oscillator tuning
     register, select new clock sources, and to wait until new clock sources
