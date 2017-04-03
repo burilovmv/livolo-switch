@@ -37,7 +37,7 @@ void interrupt isr(void)
     if(T0IF) { // Timer0 overflow
         TMR1ON = 0; // Stop Timer1
         
-        int freq = TMR1H<<8 & TMR1L;
+        uint16_t freq = TMR1H << 8 | TMR1L;
         
         if(calibrating) {
             if(calibrate_step==0) {
@@ -47,18 +47,29 @@ void interrupt isr(void)
             }            
             calibrate_step++;
             if(calibrate_step>10) {
+                min_diff = avg1 / 10;
+                if(min_diff<=0) {
+                    min_diff = 5;
+                }
                 calibrating = false;
             }
         } else {
             diff = avg1 - freq;
             
-            if(diff>min_diff) {
-                if(sw1_on==0) {
-                    sw1_on = 1;
-                } else {
-                    sw1_on = 0;
-                }
+            if(diff>20) {
+                sw1_on = !sw1_on;
             }
+               //avg1 = (9*avg1 + freq)/10;
+            
+            
+            /*if(diff>20) {
+                sw1_on = !sw1_on;
+            }*//* else {
+                if(!sw1_on) {
+                    sw1_on = true;
+                }
+            }*/           
+            
         }
         
         TMR1L = 0; //Reset Timer1
@@ -66,10 +77,6 @@ void interrupt isr(void)
         
         TMR1ON = 1; // Restart Timer1
         T0IF = 0;   // Reset Timer0
-    }
-    
-    if(T1IF) { //overflow?
-        T1IF = 0; 
     }
 }
 #endif

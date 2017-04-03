@@ -42,6 +42,8 @@ void main(void)
 {
     /* Configure the oscillator for the device */
     ConfigureOscillator();
+    
+    delay(100); // wait for oscillator settings to be in effect
 
     /* Initialize I/O and Peripherals for application */
     InitApp();
@@ -53,7 +55,6 @@ void main(void)
     T0IF = 0; // Start timers
     TMR1ON = 1;
 
-    //TODO: calibrate!
     while(1)
     {
         if(calibrating) {
@@ -70,7 +71,7 @@ void main(void)
                 
                 sw1_prev = sw1_on;
             }
-            delay(50);
+            delay(10);
         }
     }
 }
