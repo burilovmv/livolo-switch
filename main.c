@@ -27,11 +27,13 @@ int avg2 = 0;
 int calibrate_step = 0;
 bool calibrating = true;
 
-bool sw1_on = false;
+bool sw1_on = true;
 bool sw2_on = false;
 
 bool sw1_prev = false;
 bool sw2_prev = false;
+
+bool debug3 = false;
 
 void delay(uint8_t time);
 
@@ -55,6 +57,10 @@ void main(void)
     T0IF = 0; // Start timers
     TMR1ON = 1;
 
+    DEBUG1 = 0;
+    DEBUG2 = 0;
+    DEBUG3 = 1;
+    
     while(1)
     {
         if(calibrating) {
@@ -65,13 +71,20 @@ void main(void)
             }
             delay(50);
         } else {
+            if(debug3) {
+                DEBUG3 = !DEBUG3;
+            } else {
+                PULSR = 1;
+            }
+            debug3 = false;
+            
             if(sw1_on!=sw1_prev) {
                 LED1 = sw1_on;
-                RELAY1 = sw1_on;
+                //RELAY1 = sw1_on;
                 
                 sw1_prev = sw1_on;
             }
-            delay(10);
+            delay(20);
         }
     }
 }

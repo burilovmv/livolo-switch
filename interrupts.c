@@ -11,6 +11,10 @@
 #include <stdint.h>         /* For uint8_t definition */
 #include <stdbool.h>        /* For true/false definition */
 
+#include "user.h"
+
+#define DEPTH	64L
+
 extern int avg1;
 extern int avg2;
 
@@ -29,15 +33,26 @@ extern bool calibrating;
  * _PIC12 */
 #ifndef _PIC12
 
+unsigned long avtemp;
 int diff = 0;
 extern int min_diff;
+
+extern bool debug3;
 
 void interrupt isr(void)
 {
     if(T0IF) { // Timer0 overflow
         TMR1ON = 0; // Stop Timer1
         
+        debug3 = true;
+        
         uint16_t freq = TMR1H << 8 | TMR1L;
+        
+        if(freq<300) {
+            DEBUG1 = 0;
+        } else {
+            DEBUG1 = 1; //Yellow
+        }
         
         if(calibrating) {
             if(calibrate_step==0) {
@@ -46,7 +61,7 @@ void interrupt isr(void)
                 avg1 = (avg1 + freq)/2;
             }            
             calibrate_step++;
-            if(calibrate_step>10) {
+            if(calibrate_step>100) {
                 min_diff = avg1 / 10;
                 if(min_diff<=0) {
                     min_diff = 5;
@@ -54,11 +69,39 @@ void interrupt isr(void)
                 calibrating = false;
             }
         } else {
-            diff = avg1 - freq;
+      		/*avtemp = (unsigned long)avg1*(DEPTH-1) + freq;
+            avg1 = avtemp/DEPTH;
             
-            if(diff>20) {
-                sw1_on = !sw1_on;
+            if(avg1<freq) {
+                avg1 = freq;
             }
+            
+            diff = avg1 - freq;
+         
+            if(diff<100) {
+                DEBUG2 = 0;
+            } else {
+                DEBUG2 = 1;
+            }*/
+            
+/*            if(avg1<freq) {
+                avg1 = freq;
+            } else {
+                diff = avg1 - freq;        
+                
+                if(freq>50000) {
+                    sw1_on = true;
+                } else {
+                    sw1_on = false;
+                }                
+            }*/
+            
+            if(freq>100) {
+                sw1_on = false;
+            } else {
+                sw1_on = true;
+            }
+
                //avg1 = (9*avg1 + freq)/10;
             
             
@@ -68,8 +111,7 @@ void interrupt isr(void)
                 if(!sw1_on) {
                     sw1_on = true;
                 }
-            }*/           
-            
+            }*/            
         }
         
         TMR1L = 0; //Reset Timer1

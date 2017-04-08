@@ -10,6 +10,10 @@
 #define DATA1 RB4 // This is DATA in original circuit
 #define DATA2 RB5 // This is DER in original circuit
 
+#define DEBUG1 RC6
+#define DEBUG2 RC7
+#define DEBUG3 RC0
+
 #define S1_ENABLE 1
 //#define S2_ENABLE 1 // Uncomment to enable switch 2
 
