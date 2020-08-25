@@ -2,3 +2,5 @@
 Adds support for external control (e.g. Zigbee board)
 
 The idea is to make switches accept external commands by wire.
+
+Development will be continued soon
